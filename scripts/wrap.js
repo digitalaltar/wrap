@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'OrbitControls';
+import { VRButton } from 'VRButton';
 
 // Define customMaterial at a higher scope
 let customMaterial = new THREE.ShaderMaterial({
@@ -34,6 +35,22 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 renderer.setClearColor(0x000000); // Set background color
+
+// Enable WebXR on the renderer
+renderer.xr.enabled = true;
+
+// Check if WebXR is supported
+if ('xr' in navigator) {
+    navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+        if (supported) {
+            // WebXR is supported, show the VR button
+            document.body.appendChild(VRButton.createButton(renderer));
+        } else {
+            // WebXR is not supported, handle accordingly
+            console.warn("Immersive VR is not supported by your browser");
+        }
+    });
+}
 
 // Texture loader
 const loader = new THREE.TextureLoader();
