@@ -125,6 +125,52 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
+// Start VR Controller Support
+let isSelecting = false;
+
+// Create controller objects for VR
+const controller1 = renderer.xr.getController(0);
+scene.add(controller1);
+
+// Function to handle controller input for VR
+function handleController(controller) {
+    controller.addEventListener('selectstart', onSelectStart);
+    controller.addEventListener('selectend', onSelectEnd);
+}
+
+function onSelectStart(event) {
+    const controller = event.target;
+
+    isSelecting = true;
+}
+
+function onSelectEnd(event) {
+    const controller = event.target;
+
+    isSelecting = false;
+}
+
+function updateVR() {
+    if (isSelecting) {
+        // Assuming the controller's Y-axis movement dictates the action
+        const deltaY = controller1.position.y - previousYPosition;
+
+        if (Math.abs(deltaY) > threshold) {
+            if (deltaY > 0) {
+                // Zoom in or pan up
+            } else {
+                // Zoom out or pan down
+            }
+        }
+
+        // Update previousYPosition for the next frame
+        previousYPosition = controller1.position.y;
+    }
+}
+
+// Call the input handling setup function for VR
+handleController(controller1);
+
 // Adjust the animate function
 function animate() {
     if (customMaterial && customMaterial.uniforms.time) {
@@ -136,6 +182,7 @@ function animate() {
         controls.update();
     }
 
+    updateVR();
     renderer.render(scene, camera);
 }
 
