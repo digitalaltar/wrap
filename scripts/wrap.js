@@ -100,19 +100,22 @@ fetch('./data.json')
 
 // Event listeners for entering and exiting VR
 renderer.xr.addEventListener('sessionstart', () => {
+    // Save the camera state when entering VR
     savedCameraState.position.copy(camera.position);
     savedCameraState.quaternion.copy(camera.quaternion);
 });
 
 renderer.xr.addEventListener('sessionend', () => {
+    // Restore the camera state when exiting VR
     camera.position.copy(savedCameraState.position);
     camera.quaternion.copy(savedCameraState.quaternion);
 
+    // Reset the aspect ratio and renderer size
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // This is essential if controls are disabled during VR session
+    // Re-enable and update controls if they were disabled during VR session
     controls.enabled = true;
     controls.update();
 });
@@ -122,17 +125,14 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
+// Adjust the animate function
 function animate() {
-    // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
-    
     if (customMaterial && customMaterial.uniforms.time) {
-        customMaterial.uniforms.time.value += 0.05; // Ensure this runs only after texture is loaded
+        customMaterial.uniforms.time.value += 0.05;
     }
     
-    if (renderer.xr.isPresenting) {
-        // VR mode is active, skip OrbitControls update
-    } else {
-        // VR mode is not active, update OrbitControls
+    if (!renderer.xr.isPresenting) {
+        // Only update OrbitControls when not in VR mode
         controls.update();
     }
 
@@ -141,3 +141,12 @@ function animate() {
 
 // Use this to handle the animation loop in VR mode
 renderer.setAnimationLoop(animate);
+
+// Additional setup for window resize to ensure proper aspect ratio and renderer size
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
