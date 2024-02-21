@@ -101,17 +101,17 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
 function animate() {
-    requestAnimationFrame(animate);
-
+    // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
+    
     if (customMaterial && customMaterial.uniforms.time) {
         customMaterial.uniforms.time.value += 0.05; // Ensure this runs only after texture is loaded
     }
     
-    // Update controls
     controls.update();
-
     renderer.render(scene, camera);
 }
 
+// Use this to handle the animation loop in VR mode
+renderer.setAnimationLoop(animate);
 
 animate();
