@@ -120,47 +120,23 @@ renderer.xr.addEventListener('sessionend', () => {
     controls.update();
 });
 
-// Initialize VR Controls
-const controller1 = renderer.xr.getController(0);
-scene.add(controller1);
-
-let isSqueezing = false;
-controller1.addEventListener('squeezestart', () => isSqueezing = true);
-controller1.addEventListener('squeezeend', () => isSqueezing = false);
-
-let lastPosition = new THREE.Vector3();
-
-function handleControllerMovement() {
-    if (!isSqueezing) {
-        lastPosition.copy(controller1.position);
-        return;
-    }
-
-    let deltaPosition = controller1.position.clone().sub(lastPosition);
-    
-    // For simplicity, let's use the Y movement for zooming and X for panning.
-    camera.position.x += deltaPosition.x; // Panning
-    camera.position.z += deltaPosition.y; // Zooming (using Y for demonstration)
-
-    lastPosition.copy(controller1.position);
-}
-
 // Initialize OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
-// Adjust the animate function
 function animate() {
+    // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
+    
     if (customMaterial && customMaterial.uniforms.time) {
-        customMaterial.uniforms.time.value += 0.05;
+        customMaterial.uniforms.time.value += 0.05; // Ensure this runs only after texture is loaded
     }
     
-    if (!renderer.xr.isPresenting) {
-        // Only update OrbitControls when not in VR mode
-        controls.update();
+    if (renderer.xr.isPresenting) {
+        // VR mode is active, skip OrbitControls update
     } else {
-        handleControllerMovement();
+        // VR mode is not active, update OrbitControls
+        controls.update();
     }
 
     renderer.render(scene, camera);
