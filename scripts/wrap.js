@@ -107,7 +107,13 @@ function animate() {
         customMaterial.uniforms.time.value += 0.05; // Ensure this runs only after texture is loaded
     }
     
-    controls.update();
+    if (renderer.xr.isPresenting) {
+        // VR mode is active, skip OrbitControls update
+    } else {
+        // VR mode is not active, update OrbitControls
+        controls.update();
+    }
+    
     renderer.render(scene, camera);
 }
 
