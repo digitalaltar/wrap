@@ -120,56 +120,35 @@ renderer.xr.addEventListener('sessionend', () => {
     controls.update();
 });
 
+// Initialize VR Controls
+const controller1 = renderer.xr.getController(0);
+scene.add(controller1);
+
+let isSqueezing = false;
+controller1.addEventListener('squeezestart', () => isSqueezing = true);
+controller1.addEventListener('squeezeend', () => isSqueezing = false);
+
+let lastPosition = new THREE.Vector3();
+
+function handleControllerMovement() {
+    if (!isSqueezing) {
+        lastPosition.copy(controller1.position);
+        return;
+    }
+
+    let deltaPosition = controller1.position.clone().sub(lastPosition);
+    
+    // For simplicity, let's use the Y movement for zooming and X for panning.
+    camera.position.x += deltaPosition.x; // Panning
+    camera.position.z += deltaPosition.y; // Zooming (using Y for demonstration)
+
+    lastPosition.copy(controller1.position);
+}
+
 // Initialize OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
-
-// Start VR Controller Support
-let isSelecting = false;
-
-// Create controller objects for VR
-const controller1 = renderer.xr.getController(0);
-scene.add(controller1);
-
-// Function to handle controller input for VR
-function handleController(controller) {
-    controller.addEventListener('selectstart', onSelectStart);
-    controller.addEventListener('selectend', onSelectEnd);
-}
-
-function onSelectStart(event) {
-    const controller = event.target;
-
-    isSelecting = true;
-}
-
-function onSelectEnd(event) {
-    const controller = event.target;
-
-    isSelecting = false;
-}
-
-function updateVR() {
-    if (isSelecting) {
-        // Assuming the controller's Y-axis movement dictates the action
-        const deltaY = controller1.position.y - previousYPosition;
-
-        if (Math.abs(deltaY) > threshold) {
-            if (deltaY > 0) {
-                // Zoom in or pan up
-            } else {
-                // Zoom out or pan down
-            }
-        }
-
-        // Update previousYPosition for the next frame
-        previousYPosition = controller1.position.y;
-    }
-}
-
-// Call the input handling setup function for VR
-handleController(controller1);
 
 // Adjust the animate function
 function animate() {
@@ -180,20 +159,12 @@ function animate() {
     if (!renderer.xr.isPresenting) {
         // Only update OrbitControls when not in VR mode
         controls.update();
+    } else {
+        handleControllerMovement();
     }
 
-    updateVR();
     renderer.render(scene, camera);
 }
 
 // Use this to handle the animation loop in VR mode
 renderer.setAnimationLoop(animate);
-
-// Additional setup for window resize to ensure proper aspect ratio and renderer size
-window.addEventListener('resize', onWindowResize, false);
-
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
