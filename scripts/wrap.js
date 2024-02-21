@@ -34,7 +34,7 @@ camera.position.z = 3; // Move the camera closer to the cylinder's surface
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-renderer.setClearColor(0x000000); // Set background color
+renderer.setClearColor(new THREE.Color('magenta')); // Set to a bright color for testing
 
 // Enable WebXR on the renderer
 renderer.xr.enabled = true;
@@ -51,6 +51,9 @@ if ('xr' in navigator) {
         }
     });
 }
+
+// Define a variable to store the camera's state
+let savedCameraState = { position: new THREE.Vector3(), quaternion: new THREE.Quaternion() };
 
 // Texture loader
 const loader = new THREE.TextureLoader();
@@ -95,6 +98,25 @@ fetch('./data.json')
   })
   .catch(error => console.error('Error loading the JSON file:', error));
 
+// Event listeners for entering and exiting VR
+renderer.xr.addEventListener('sessionstart', () => {
+    savedCameraState.position.copy(camera.position);
+    savedCameraState.quaternion.copy(camera.quaternion);
+});
+
+renderer.xr.addEventListener('sessionend', () => {
+    camera.position.copy(savedCameraState.position);
+    camera.quaternion.copy(savedCameraState.quaternion);
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // This is essential if controls are disabled during VR session
+    controls.enabled = true;
+    controls.update();
+});
+
 // Initialize OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
@@ -113,11 +135,9 @@ function animate() {
         // VR mode is not active, update OrbitControls
         controls.update();
     }
-    
+
     renderer.render(scene, camera);
 }
 
 // Use this to handle the animation loop in VR mode
 renderer.setAnimationLoop(animate);
-
-animate();
