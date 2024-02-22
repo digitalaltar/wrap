@@ -165,22 +165,11 @@ function handleControllerInput(controller) {
     if (!controller || !controller.gamepad) return;
 
     const { axes } = controller.gamepad;
-
     if (axes.length >= 2) {
-        // Check if there's significant joystick movement
         if (Math.abs(axes[0]) > 0.1 || Math.abs(axes[1]) > 0.1) {
-            // Change debugObject color to red when there's joystick input
+            // Indicate that input is detected, e.g., by changing the color of debugObject
             debugObject.material.color.set(0xff0000);
-        } else {
-            // No joystick input, change it back to green
-            debugObject.material.color.set(0x00ff00);
         }
-
-        // Apply joystick input to camera position as desired
-        const deltaX = axes[0] * panSpeed;
-        const deltaZ = axes[1] * forwardSpeed;
-        camera.position.x += deltaX;
-        camera.position.z -= deltaZ;
     }
 }
 
