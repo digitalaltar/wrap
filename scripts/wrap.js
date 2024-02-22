@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'OrbitControls';
 import { VRButton } from 'VRButton';
+import { XRControllerModelFactory } from 'XRControllerModelFactory';
+import { GLTFLoader } from 'GLTFLoader';
+import { MotionController } from 'MotionController';
 
 // Define customMaterial at a higher scope
 let customMaterial = new THREE.ShaderMaterial({
@@ -125,33 +128,41 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
+// Controller model factory
+const controllerModelFactory = new XRControllerModelFactory();
+
 // Renderer and scene must already be set up
 const controller1 = renderer.xr.getController(0);
 scene.add(controller1);
 
 // Define sensitivity for panning and zooming
-const panSpeed = 0.05; // Adjust this value based on testing
-const zoomSpeed = 0.1; // Adjust this value based on testing
+const panSpeed = 0.05; // Adjust based on your needs
+const zoomSpeed = 0.1; // Adjust based on your needs
+
+// Create and add the controller models to the scene
+const controllerGrip1 = renderer.xr.getControllerGrip(0);
+controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+scene.add(controllerGrip1);
 
 // This function will be called every frame to check controller input
-function handleControllerInput() {
-    const gamepad = controller1.gamepad;
+function handleControllerInput(controller) {
+    if (!controller || !controller.gamepad) return;
 
-    if (gamepad && gamepad.axes.length >= 2) {
-        // VR controller joysticks typically have at least two axes:
-        // axes[0]: Left (-1) to Right (1)
-        // axes[1]: Down (-1) to Up (1)
+    const { axes, buttons } = controller.gamepad;
 
-        const pan = gamepad.axes[0]; // Horizontal movement for panning
-        const zoom = gamepad.axes[1]; // Vertical movement for zooming
+    // Example: Use the first two axes for panning and zooming
+    if (axes.length >= 2) {
+        const pan = axes[0] * panSpeed;
+        const zoom = axes[1] * zoomSpeed;
+        
+        // Apply pan and zoom to camera or scene...
+        camera.position.x += pan;
+        camera.position.z += zoom; // Adjust this based on your camera setup
+    }
 
-        // Apply the pan - adjust camera or scene based on pan value
-        // For example, moving the camera left or right
-        camera.position.x += pan * panSpeed; // panSpeed is a value you define for sensitivity
-
-        // Apply the zoom - move the camera in or out based on zoom value
-        // This simulates zooming by changing the camera's position along the Z-axis
-        camera.position.z += zoom * zoomSpeed; // zoomSpeed controls how fast the zoom happens
+    // Optionally, handle button presses
+    if (buttons.length > 0 && buttons[0].pressed) {
+        // Example button press handling
     }
 }
 
@@ -163,8 +174,7 @@ function animate() {
     }
     
     if (renderer.xr.isPresenting) {
-        // VR mode is active, skip OrbitControls update
-        handleControllerInput();
+        handleControllerInput(controller1); // For each controller
     } else {
         // VR mode is not active, update OrbitControls
         controls.update();
