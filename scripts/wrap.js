@@ -146,29 +146,24 @@ const controllerGrip2 = renderer.xr.getControllerGrip(1);
 controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 scene.add(controllerGrip2);
 
-// Define sensitivity for panning and zooming
-const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
-const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
-
 function handleControllerInput(controller) {
     if (!controller || !controller.gamepad) return;
 
     const { axes } = controller.gamepad;
 
+    // Check for joystick deadzone and movement
+    const deadzone = 0.1; // Threshold to ignore small joystick movements
+    const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
+    const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
+
     // Ensure we have at least the primary two axes for the joystick
     if (axes.length >= 2) {
-        // Joystick movement: axes[0] for horizontal (left/right), axes[1] for vertical (up/down or forward/backward)
-        const horizontalMovement = axes[0] * panSpeed;
-        const verticalMovement = axes[1] * forwardSpeed;
+        const horizontalMovement = Math.abs(axes[0]) > deadzone ? axes[0] * panSpeed : 0;
+        const verticalMovement = Math.abs(axes[1]) > deadzone ? axes[1] * forwardSpeed : 0;
 
-        // Apply horizontal movement (panning)
-        // This moves the camera left or right based on horizontal joystick movement
+        // Apply pan and zoom (or forward/backward) movement to camera
         camera.position.x += horizontalMovement;
-
-        // Apply vertical movement (forward/backward)
-        // This example moves the camera forward or backward based on vertical joystick movement
-        // Adjust camera.position.z for a different axis if needed, depending on your scene setup
-        camera.position.z -= verticalMovement; // Using '-' to invert the direction so up is forward
+        camera.position.z -= verticalMovement; // Using '-' to move forward when the joystick is pushed up
     }
 }
 
