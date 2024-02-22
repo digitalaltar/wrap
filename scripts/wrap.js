@@ -198,6 +198,8 @@ const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward mov
 function handleControllerInput(controller) {
     if (!controller || !controller.gamepad) return;
 
+    debugObject.material.color.set('yellow');
+    
     const { axes, buttons } = controller.gamepad;
 
     // Check if any joystick has moved significantly or any button is pressed
