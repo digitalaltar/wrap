@@ -129,6 +129,10 @@ controls.minPolarAngle = Math.PI / 2;
 const controller1 = renderer.xr.getController(0);
 scene.add(controller1);
 
+// Define sensitivity for panning and zooming
+const panSpeed = 0.05; // Adjust this value based on testing
+const zoomSpeed = 0.1; // Adjust this value based on testing
+
 // This function will be called every frame to check controller input
 function handleControllerInput() {
     const gamepad = controller1.gamepad;
