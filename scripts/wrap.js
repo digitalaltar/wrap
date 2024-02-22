@@ -191,18 +191,37 @@ const controllerGrip2 = renderer.xr.getControllerGrip(1);
 controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 scene.add(controllerGrip2);
 
-// Define global variables for movement speeds for easier tweaking
-const panSpeed = 0.05; // Adjust for sensitivity
-const zoomSpeed = 0.1; // Adjust for sensitivity
-
+// Event listener for controller input
 function handleControllerInput(controller) {
-    // Immediate visual feedback
     debugObject.material.color.set('yellow');
 
     if (!controller) return;
 
     debugObject.material.color.set('teal');
+
+    // Get controller's input source (e.g., thumbsticks, touchpad)
+    const inputSource = controller.getInputSource();
+
+    // Check if the input source is available
+    if (inputSource) {
+        // Get thumbstick/touchpad axes values
+        const axes = inputSource.gamepad.axes;
+        
+        // Define sensitivity for panning and zooming
+        const panSensitivity = 0.1;
+        const zoomSensitivity = 0.1;
+
+        // Update object's position based on thumbstick/touchpad input
+        debugObject.position.x += axes[0] * panSensitivity; // Left/Right panning
+        debugObject.position.y += axes[1] * zoomSensitivity; // Up/Down zooming
+    }
 }
+
+// Call the handleControllerInput function for each controller
+renderer.xr.addEventListener('sessionstart', () => {
+    controller1.addEventListener('selectstart', () => handleControllerInput(controller1));
+    controller2.addEventListener('selectstart', () => handleControllerInput(controller2));
+});
 
 controller1.addEventListener('connected', (event) => {
     textMaterial.map = createTextTexture(`Controller 1 connected with hand ${event.data.handedness}`);
