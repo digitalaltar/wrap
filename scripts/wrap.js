@@ -134,35 +134,38 @@ const controllerModelFactory = new XRControllerModelFactory();
 // Renderer and scene must already be set up
 const controller1 = renderer.xr.getController(0);
 scene.add(controller1);
-
-// Define sensitivity for panning and zooming
-const panSpeed = 0.05; // Adjust based on your needs
-const zoomSpeed = 0.1; // Adjust based on your needs
+const controller2 = renderer.xr.getController(1);
+scene.add(controller2);
 
 // Create and add the controller models to the scene
 const controllerGrip1 = renderer.xr.getControllerGrip(0);
 controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
 scene.add(controllerGrip1);
 
+const controllerGrip2 = renderer.xr.getControllerGrip(1);
+controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+scene.add(controllerGrip2);
+
+// Define sensitivity for panning and zooming
+const panSpeed = 0.05; // Adjust based on your needs
+const zoomSpeed = 0.1; // Adjust based on your needs
+
 // This function will be called every frame to check controller input
 function handleControllerInput(controller) {
-    if (!controller || !controller.gamepad) return;
+    if (!controller.gamepad) return;
 
-    const { axes, buttons } = controller.gamepad;
+    const { axes } = controller.gamepad;
 
-    // Example: Use the first two axes for panning and zooming
+    // Assuming axes[2] and axes[3] might be used for a second joystick if available
     if (axes.length >= 2) {
-        const pan = axes[0] * panSpeed;
-        const zoom = axes[1] * zoomSpeed;
-        
-        // Apply pan and zoom to camera or scene...
-        camera.position.x += pan;
-        camera.position.z += zoom; // Adjust this based on your camera setup
-    }
+        // Joystick movement: axes[0] for horizontal, axes[1] for vertical movements
+        const horizontal = axes[0]; // Left = -1, Right = 1
+        const vertical = axes[1]; // Down = -1, Up = 1
 
-    // Optionally, handle button presses
-    if (buttons.length > 0 && buttons[0].pressed) {
-        // Example button press handling
+        // Apply movements based on joystick input
+        // Example: Adjusting camera position for demonstration
+        camera.position.x += horizontal * panSpeed;
+        camera.position.y += vertical * zoomSpeed; // or adjust `camera.position.z` for forward/backward movement
     }
 }
 
@@ -175,6 +178,7 @@ function animate() {
     
     if (renderer.xr.isPresenting) {
         handleControllerInput(controller1); // For each controller
+        handleControllerInput(controller2);
     } else {
         // VR mode is not active, update OrbitControls
         controls.update();
