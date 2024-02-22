@@ -101,6 +101,17 @@ fetch('./data.json')
   })
   .catch(error => console.error('Error loading the JSON file:', error));
 
+// Create a geometry, material, and then mesh for the debug object
+const debugGeometry = new THREE.BoxGeometry(1, 1, 1); // Create a small cube
+const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Initially green
+const debugObject = new THREE.Mesh(debugGeometry, debugMaterial);
+
+// Position it in front of the camera or any specific place
+debugObject.position.set(0, 1.5, -2); // Adjust position as needed
+
+// Add the debug object to your scene
+scene.add(debugObject);
+
 // Event listeners for entering and exiting VR
 renderer.xr.addEventListener('sessionstart', () => {
     // Save the camera state when entering VR
@@ -146,24 +157,30 @@ const controllerGrip2 = renderer.xr.getControllerGrip(1);
 controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
 scene.add(controllerGrip2);
 
+// Define global variables for movement speeds for easier tweaking
+const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
+const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
+
 function handleControllerInput(controller) {
     if (!controller || !controller.gamepad) return;
 
     const { axes } = controller.gamepad;
 
-    // Check for joystick deadzone and movement
-    const deadzone = 0.1; // Threshold to ignore small joystick movements
-    const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
-    const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
-
-    // Ensure we have at least the primary two axes for the joystick
     if (axes.length >= 2) {
-        const horizontalMovement = Math.abs(axes[0]) > deadzone ? axes[0] * panSpeed : 0;
-        const verticalMovement = Math.abs(axes[1]) > deadzone ? axes[1] * forwardSpeed : 0;
+        // Check if there's significant joystick movement
+        if (Math.abs(axes[0]) > 0.1 || Math.abs(axes[1]) > 0.1) {
+            // Change debugObject color to red when there's joystick input
+            debugObject.material.color.set(0xff0000);
+        } else {
+            // No joystick input, change it back to green
+            debugObject.material.color.set(0x00ff00);
+        }
 
-        // Apply pan and zoom (or forward/backward) movement to camera
-        camera.position.x += horizontalMovement;
-        camera.position.z -= verticalMovement; // Using '-' to move forward when the joystick is pushed up
+        // Apply joystick input to camera position as desired
+        const deltaX = axes[0] * panSpeed;
+        const deltaZ = axes[1] * forwardSpeed;
+        camera.position.x += deltaX;
+        camera.position.z -= deltaZ;
     }
 }
 
