@@ -134,6 +134,40 @@ renderer.xr.addEventListener('sessionend', () => {
     controls.update();
 });
 
+// Create a mesh to display the text
+const textMaterial = new THREE.MeshBasicMaterial({ 
+    map: createTextTexture('Controller Status: Disconnected'), // Initial text
+    transparent: true, 
+    side: THREE.DoubleSide 
+});
+const textGeometry = new THREE.PlaneGeometry(2, 0.5); // Adjust size as needed
+const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+textMesh.position.set(0, -2, -3); // Position in front of the camera
+scene.add(textMesh);
+
+function createTextTexture(text, color = 'black') {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 800; // Adjust as needed
+    canvas.height = 200; // Adjust as needed
+
+    // Set canvas background color
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Set text properties
+    context.font = '36px Arial';
+    context.fillStyle = color;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    // Create texture from canvas
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+}
+
 // Initialize OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
@@ -172,6 +206,27 @@ function handleControllerInput(controller) {
         }
     }
 }
+
+controller1.addEventListener('connected', (event) => {
+    textMaterial.map = createTextTexture(`Controller 1 connected with hand ${event.data.handedness}`);
+    textMaterial.map.needsUpdate = true;
+});
+
+controller1.addEventListener('disconnected', () => {
+    textMaterial.map = createTextTexture('Controller 1 disconnected');
+    textMaterial.map.needsUpdate = true;
+});
+
+// Repeat for controller2
+controller2.addEventListener('connected', (event) => {
+    textMaterial.map = createTextTexture(`Controller 2 connected with hand ${event.data.handedness}`);
+    textMaterial.map.needsUpdate = true;
+});
+
+controller2.addEventListener('disconnected', () => {
+    textMaterial.map = createTextTexture('Controller 2 disconnected');
+    textMaterial.map.needsUpdate = true;
+});
 
 function animate() {
     // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
