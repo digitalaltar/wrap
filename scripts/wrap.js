@@ -206,7 +206,7 @@ function handleControllerInput(controller) {
 
         // Check if the input source has thumbstick/touchpad input
         const gamepad = inputSource.gamepad;
-        if (gamepad && gamepad.axes.length >= 2) {
+        if (gamepad) {
             // Get thumbstick/touchpad axes values
             const axes = gamepad.axes;
             
