@@ -147,25 +147,28 @@ controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2
 scene.add(controllerGrip2);
 
 // Define sensitivity for panning and zooming
-const panSpeed = 0.05; // Adjust based on your needs
-const zoomSpeed = 0.1; // Adjust based on your needs
+const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
+const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
 
-// This function will be called every frame to check controller input
 function handleControllerInput(controller) {
-    if (!controller.gamepad) return;
+    if (!controller || !controller.gamepad) return;
 
     const { axes } = controller.gamepad;
 
-    // Assuming axes[2] and axes[3] might be used for a second joystick if available
+    // Ensure we have at least the primary two axes for the joystick
     if (axes.length >= 2) {
-        // Joystick movement: axes[0] for horizontal, axes[1] for vertical movements
-        const horizontal = axes[0]; // Left = -1, Right = 1
-        const vertical = axes[1]; // Down = -1, Up = 1
+        // Joystick movement: axes[0] for horizontal (left/right), axes[1] for vertical (up/down or forward/backward)
+        const horizontalMovement = axes[0] * panSpeed;
+        const verticalMovement = axes[1] * forwardSpeed;
 
-        // Apply movements based on joystick input
-        // Example: Adjusting camera position for demonstration
-        camera.position.x += horizontal * panSpeed;
-        camera.position.y += vertical * zoomSpeed; // or adjust `camera.position.z` for forward/backward movement
+        // Apply horizontal movement (panning)
+        // This moves the camera left or right based on horizontal joystick movement
+        camera.position.x += horizontalMovement;
+
+        // Apply vertical movement (forward/backward)
+        // This example moves the camera forward or backward based on vertical joystick movement
+        // Adjust camera.position.z for a different axis if needed, depending on your scene setup
+        camera.position.z -= verticalMovement; // Using '-' to invert the direction so up is forward
     }
 }
 
