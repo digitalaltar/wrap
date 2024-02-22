@@ -125,6 +125,32 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
 
+// Renderer and scene must already be set up
+const controller1 = renderer.xr.getController(0);
+scene.add(controller1);
+
+// This function will be called every frame to check controller input
+function handleControllerInput() {
+    const gamepad = controller1.gamepad;
+
+    if (gamepad && gamepad.axes.length >= 2) {
+        // VR controller joysticks typically have at least two axes:
+        // axes[0]: Left (-1) to Right (1)
+        // axes[1]: Down (-1) to Up (1)
+
+        const pan = gamepad.axes[0]; // Horizontal movement for panning
+        const zoom = gamepad.axes[1]; // Vertical movement for zooming
+
+        // Apply the pan - adjust camera or scene based on pan value
+        // For example, moving the camera left or right
+        camera.position.x += pan * panSpeed; // panSpeed is a value you define for sensitivity
+
+        // Apply the zoom - move the camera in or out based on zoom value
+        // This simulates zooming by changing the camera's position along the Z-axis
+        camera.position.z += zoom * zoomSpeed; // zoomSpeed controls how fast the zoom happens
+    }
+}
+
 function animate() {
     // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
     
@@ -134,6 +160,7 @@ function animate() {
     
     if (renderer.xr.isPresenting) {
         // VR mode is active, skip OrbitControls update
+        handleControllerInput();
     } else {
         // VR mode is not active, update OrbitControls
         controls.update();
