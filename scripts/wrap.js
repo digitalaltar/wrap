@@ -204,9 +204,13 @@ function handleControllerInput(controller) {
     if (inputSource) {
         // Log the input source for debugging
         console.log('Input source:', inputSource);
+        debugObject.material.color.set('orange');
 
         // Register an event listener for thumbstick input
         inputSource.addEventListener('thumbstickmoved', (event) => {
+            // Log that the thumbstick event is triggered
+            console.log('Thumbstick moved:', event);
+
             // Get the thumbstick axes values
             const axes = event.axes;
 
@@ -229,8 +233,16 @@ function handleControllerInput(controller) {
 
 // Call the handleControllerInput function for each controller
 renderer.xr.addEventListener('sessionstart', () => {
-    controller1.addEventListener('selectstart', () => handleControllerInput(controller1));
-    controller2.addEventListener('selectstart', () => handleControllerInput(controller2));
+    controller1.addEventListener('selectstart', () => {
+        console.log('Controller 1 selectstart event triggered.');
+        handleControllerInput(controller1);
+        debugObject.material.color.set('red');
+    });
+    controller2.addEventListener('selectstart', () => {
+        console.log('Controller 2 selectstart event triggered.');
+        handleControllerInput(controller2);
+        debugObject.material.color.set('blue');
+    });
 });
 
 controller1.addEventListener('connected', (event) => {
