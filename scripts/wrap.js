@@ -231,23 +231,10 @@ function handleControllerInput(controller) {
     }
 }
 
-// Call the handleControllerInput function for each controller
-renderer.xr.addEventListener('sessionstart', () => {
-    controller1.addEventListener('selectstart', () => {
-        console.log('Controller 1 selectstart event triggered.');
-        handleControllerInput(controller1);
-        debugObject.material.color.set('red');
-    });
-    controller2.addEventListener('selectstart', () => {
-        console.log('Controller 2 selectstart event triggered.');
-        handleControllerInput(controller2);
-        debugObject.material.color.set('blue');
-    });
-});
-
 controller1.addEventListener('connected', (event) => {
     textMaterial.map = createTextTexture(`Controller 1 connected with hand ${event.data.handedness}`);
     textMaterial.map.needsUpdate = true;
+    handleControllerInput(controller1);
 });
 
 controller1.addEventListener('disconnected', () => {
@@ -259,6 +246,7 @@ controller1.addEventListener('disconnected', () => {
 controller2.addEventListener('connected', (event) => {
     textMaterial.map = createTextTexture(`Controller 2 connected with hand ${event.data.handedness}`);
     textMaterial.map.needsUpdate = true;
+    handleControllerInput(controller2);
 });
 
 controller2.addEventListener('disconnected', () => {
