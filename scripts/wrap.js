@@ -199,7 +199,7 @@ function handleControllerInput(controller) {
     // Immediate visual feedback
     debugObject.material.color.set('yellow');
 
-    if (!controller || !controller.gamepad) return;
+    if (!controller) return;
 
     debugObject.material.color.set('teal');
 }
