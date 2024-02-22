@@ -192,12 +192,16 @@ controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2
 scene.add(controllerGrip2);
 
 // Define global variables for movement speeds for easier tweaking
-const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
-const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
+const panSpeed = 0.05; // Adjust for sensitivity
+const zoomSpeed = 0.1; // Adjust for sensitivity
 
 function handleControllerInput(controller) {
     // Immediate visual feedback
     debugObject.material.color.set('yellow');
+
+    if (!controller || !controller.gamepad) return;
+
+    debugObject.material.color.set('teal');
 }
 
 controller1.addEventListener('connected', (event) => {
