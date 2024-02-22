@@ -198,21 +198,28 @@ function handleControllerInput(controller) {
     if (!controller) return;
 
     // Get the input source
-    const inputSource = renderer.xr.getControllerGrip(0).inputSource;
+    const inputSource = controller.inputSource;
 
-    // Check if the input source is available and has thumbstick/touchpad input
-    if (inputSource && inputSource.handedness === 'right' && inputSource.gamepad.axes.length >= 2) {
-        // Get thumbstick/touchpad axes values
-        const axes = inputSource.gamepad.axes;
-        
-        // Define sensitivity for panning and zooming
-        const panSensitivity = 0.1;
-        const zoomSensitivity = 0.1;
+    // Check if the input source is available
+    if (inputSource) {
+        debugObject.material.color.set('orange');
 
-        // Update object's position based on thumbstick/touchpad input
-        debugObject.position.x += axes[0] * panSensitivity; // Left/Right panning
-        debugObject.position.y += axes[1] * zoomSensitivity; // Up/Down zooming
-        debugObject.material.color.set('purple');
+        // Check if the input source has thumbstick/touchpad input
+        const gamepad = inputSource.gamepad;
+        if (gamepad && gamepad.axes.length >= 2) {
+            // Get thumbstick/touchpad axes values
+            const axes = gamepad.axes;
+            
+            // Define sensitivity for panning and zooming
+            const panSensitivity = 0.1;
+            const zoomSensitivity = 0.1;
+
+            // Update object's position based on thumbstick/touchpad input
+            debugObject.position.x += axes[0] * panSensitivity; // Left/Right panning
+            debugObject.position.y += axes[1] * zoomSensitivity; // Up/Down zooming
+
+            debugObject.material.color.set('purple');
+        }
     }
 }
 
