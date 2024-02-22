@@ -196,16 +196,24 @@ const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
 const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
 
 function handleControllerInput(controller) {
-    if (controller && controller.gamepad) {
-        const { axes } = controller.gamepad;
-        if (axes.length > 0) {
-            // For testing, immediately reflect any detected input visually
-            debugObject.material.color.set(0xff0000);
-            
-            // Apply a test movement to the camera or an object to ensure the function's effect
-            camera.position.x += 0.01; // Example of a direct and simple movement
-        }
+    if (!controller || !controller.gamepad) return;
+
+    const { axes, buttons } = controller.gamepad;
+
+    // Check if any joystick has moved significantly or any button is pressed
+    const isJoystickActive = axes.some(axis => Math.abs(axis) > 0.1);
+    const isButtonPressed = buttons.some(button => button.pressed);
+
+    if (isJoystickActive || isButtonPressed) {
+        // If any input is detected, change the debug object's color to blue
+        debugObject.material.color.set('blue');
+    } else {
+        // If no input is detected, change it to red
+        debugObject.material.color.set('red');
     }
+
+    // Optionally, apply movements or actions based on the input
+    // This part remains as previously implemented, adjusting the camera or objects based on input
 }
 
 controller1.addEventListener('connected', (event) => {
