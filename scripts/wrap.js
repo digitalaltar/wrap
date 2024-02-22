@@ -196,26 +196,8 @@ const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
 const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
 
 function handleControllerInput(controller) {
-    if (!controller || !controller.gamepad) return;
-
+    // Immediate visual feedback
     debugObject.material.color.set('yellow');
-    
-    const { axes, buttons } = controller.gamepad;
-
-    // Check if any joystick has moved significantly or any button is pressed
-    const isJoystickActive = axes.some(axis => Math.abs(axis) > 0.1);
-    const isButtonPressed = buttons.some(button => button.pressed);
-
-    if (isJoystickActive || isButtonPressed) {
-        // If any input is detected, change the debug object's color to blue
-        debugObject.material.color.set('blue');
-    } else {
-        // If no input is detected, change it to red
-        debugObject.material.color.set('red');
-    }
-
-    // Optionally, apply movements or actions based on the input
-    // This part remains as previously implemented, adjusting the camera or objects based on input
 }
 
 controller1.addEventListener('connected', (event) => {
@@ -247,13 +229,13 @@ function animate() {
     }
     
     if (renderer.xr.isPresenting) {
-        handleControllerInput(controller1); // For each controller
-        handleControllerInput(controller2);
     } else {
         // VR mode is not active, update OrbitControls
         controls.update();
     }
 
+    handleControllerInput(controller1); // For each controller
+    handleControllerInput(controller2);
     renderer.render(scene, camera);
 }
 
