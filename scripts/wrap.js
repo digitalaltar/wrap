@@ -205,22 +205,25 @@ function handleControllerInput(controller) {
         // Log the input source for debugging
         console.log('Input source:', inputSource);
 
-        // Get thumbstick axes values
-        const axes = inputSource.getAxis('thumbstick');
+        // Register an event listener for thumbstick input
+        inputSource.addEventListener('thumbstickmoved', (event) => {
+            // Get the thumbstick axes values
+            const axes = event.axes;
 
-        // Log the thumbstick axes values for debugging
-        console.log('Thumbstick axes:', axes);
+            // Log the thumbstick axes values for debugging
+            console.log('Thumbstick axes:', axes);
 
-        // Define sensitivity for panning and zooming
-        const panSensitivity = 0.1;
-        const zoomSensitivity = 0.1;
+            // Define sensitivity for panning and zooming
+            const panSensitivity = 0.1;
+            const zoomSensitivity = 0.1;
 
-        // Update object's position based on thumbstick input
-        debugObject.position.x += axes[0] * panSensitivity; // Left/Right panning
-        debugObject.position.y += axes[1] * zoomSensitivity; // Up/Down zooming
+            // Update object's position based on thumbstick input
+            debugObject.position.x += axes.x * panSensitivity; // Left/Right panning
+            debugObject.position.y += axes.y * zoomSensitivity; // Up/Down zooming
 
-        // Set cube color to purple
-        debugObject.material.color.set('purple');
+            // Set cube color to purple
+            debugObject.material.color.set('purple');
+        });
     }
 }
 
