@@ -196,13 +196,14 @@ const panSpeed = 0.1; // Adjust based on your needs for horizontal movement
 const forwardSpeed = 0.1; // Adjust based on your needs for forward/backward movement
 
 function handleControllerInput(controller) {
-    if (!controller || !controller.gamepad) return;
-
-    const { axes } = controller.gamepad;
-    if (axes.length >= 2) {
-        if (Math.abs(axes[0]) > 0.1 || Math.abs(axes[1]) > 0.1) {
-            // Indicate that input is detected, e.g., by changing the color of debugObject
+    if (controller && controller.gamepad) {
+        const { axes } = controller.gamepad;
+        if (axes.length > 0) {
+            // For testing, immediately reflect any detected input visually
             debugObject.material.color.set(0xff0000);
+            
+            // Apply a test movement to the camera or an object to ensure the function's effect
+            camera.position.x += 0.01; // Example of a direct and simple movement
         }
     }
 }
