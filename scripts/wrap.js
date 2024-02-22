@@ -229,13 +229,13 @@ function animate() {
     }
     
     if (renderer.xr.isPresenting) {
+        handleControllerInput(controller1); // For each controller
+        handleControllerInput(controller2);
     } else {
         // VR mode is not active, update OrbitControls
         controls.update();
     }
 
-    handleControllerInput(controller1); // For each controller
-    handleControllerInput(controller2);
     renderer.render(scene, camera);
 }
 
