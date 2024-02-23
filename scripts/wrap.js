@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'OrbitControls';
 import { VRButton } from 'VRButton';
-import { XRControllerModelFactory } from 'XRControllerModelFactory';
 import { GLTFLoader } from 'GLTFLoader';
 import { MotionController } from 'MotionController';
 
@@ -28,6 +27,9 @@ let customMaterial = new THREE.ShaderMaterial({
     transparent: true,
     side: THREE.BackSide
 });
+
+let currentSession = null; // Define this in a higher scope
+let cylinder; // Define at the top level for global access
 
 // Setup the scene, camera, and renderer
 const scene = new THREE.Scene();
@@ -95,31 +97,23 @@ fetch('./data.json')
 
         // Create a cylinder geometry that the camera will be inside
         const geometry = new THREE.CylinderGeometry(10, 10, 20, 32, 1, true); // Increase the radius here
-        const cylinder = new THREE.Mesh(geometry, customMaterial);
+        cylinder = new THREE.Mesh(geometry, customMaterial); // Assign to the global variable
         scene.add(cylinder);
     });
   })
   .catch(error => console.error('Error loading the JSON file:', error));
 
-// Create a geometry, material, and then mesh for the debug object
-const debugGeometry = new THREE.BoxGeometry(1, 1, 1); // Create a small cube
-const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Initially green
-const debugObject = new THREE.Mesh(debugGeometry, debugMaterial);
-
-// Position it in front of the camera or any specific place
-debugObject.position.set(0, 1.5, -2); // Adjust position as needed
-
-// Add the debug object to your scene
-scene.add(debugObject);
-
 // Event listeners for entering and exiting VR
 renderer.xr.addEventListener('sessionstart', () => {
+    currentSession = renderer.xr.getSession();
     // Save the camera state when entering VR
     savedCameraState.position.copy(camera.position);
     savedCameraState.quaternion.copy(camera.quaternion);
 });
 
 renderer.xr.addEventListener('sessionend', () => {
+    currentSession = null;
+
     // Restore the camera state when exiting VR
     camera.position.copy(savedCameraState.position);
     camera.quaternion.copy(savedCameraState.quaternion);
@@ -134,47 +128,10 @@ renderer.xr.addEventListener('sessionend', () => {
     controls.update();
 });
 
-// Create a mesh to display the text
-const textMaterial = new THREE.MeshBasicMaterial({ 
-    map: createTextTexture('Controller Status: Disconnected'), // Initial text
-    transparent: true, 
-    side: THREE.DoubleSide 
-});
-const textGeometry = new THREE.PlaneGeometry(2, 0.5); // Adjust size as needed
-const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-textMesh.position.set(0, -2, -3); // Position in front of the camera
-scene.add(textMesh);
-
-function createTextTexture(text, color = 'black') {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = 800; // Adjust as needed
-    canvas.height = 200; // Adjust as needed
-
-    // Set canvas background color
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Set text properties
-    context.font = '36px Arial';
-    context.fillStyle = color;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
-
-    // Create texture from canvas
-    const texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-}
-
 // Initialize OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI / 2;
 controls.minPolarAngle = Math.PI / 2;
-
-// Controller model factory
-const controllerModelFactory = new XRControllerModelFactory();
 
 // Renderer and scene must already be set up
 const controller1 = renderer.xr.getController(0);
@@ -182,91 +139,26 @@ scene.add(controller1);
 const controller2 = renderer.xr.getController(1);
 scene.add(controller2);
 
-// Create and add the controller models to the scene
-const controllerGrip1 = renderer.xr.getControllerGrip(0);
-controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-scene.add(controllerGrip1);
-
-const controllerGrip2 = renderer.xr.getControllerGrip(1);
-controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-scene.add(controllerGrip2);
-
-// Event listener for controller input
-function handleControllerInput(controller) {
-    debugObject.material.color.set('yellow');
-
-    if (!controller) return;
-
-    // Get the input source
-    const inputSource = controller.inputSource;
-
-    // Check if the input source is available
-    if (inputSource) {
-        // Log the input source for debugging
-        console.log('Input source:', inputSource);
-        debugObject.material.color.set('orange');
-
-        // Register an event listener for thumbstick input
-        inputSource.addEventListener('thumbstickmoved', (event) => {
-            // Log that the thumbstick event is triggered
-            console.log('Thumbstick moved:', event);
-
-            // Get the thumbstick axes values
-            const axes = event.axes;
-
-            // Log the thumbstick axes values for debugging
-            console.log('Thumbstick axes:', axes);
-
-            // Define sensitivity for panning and zooming
-            const panSensitivity = 0.1;
-            const zoomSensitivity = 0.1;
-
-            // Update object's position based on thumbstick input
-            debugObject.position.x += axes.x * panSensitivity; // Left/Right panning
-            debugObject.position.y += axes.y * zoomSensitivity; // Up/Down zooming
-
-            // Set cube color to purple
-            debugObject.material.color.set('purple');
-        });
-    }
-}
-
-controller1.addEventListener('connected', (event) => {
-    textMaterial.map = createTextTexture(`Controller 1 connected with hand ${event.data.handedness}`);
-    textMaterial.map.needsUpdate = true;
-    handleControllerInput(controller1);
-});
-
-controller1.addEventListener('disconnected', () => {
-    textMaterial.map = createTextTexture('Controller 1 disconnected');
-    textMaterial.map.needsUpdate = true;
-});
-
-// Repeat for controller2
-controller2.addEventListener('connected', (event) => {
-    textMaterial.map = createTextTexture(`Controller 2 connected with hand ${event.data.handedness}`);
-    textMaterial.map.needsUpdate = true;
-    handleControllerInput(controller2);
-});
-
-controller2.addEventListener('disconnected', () => {
-    textMaterial.map = createTextTexture('Controller 2 disconnected');
-    textMaterial.map.needsUpdate = true;
-});
-
 function animate() {
-    // Removed requestAnimationFrame(animate); We'll use renderer.setAnimationLoop instead.
-    
     if (customMaterial && customMaterial.uniforms.time) {
-        customMaterial.uniforms.time.value += 0.05; // Ensure this runs only after texture is loaded
+        customMaterial.uniforms.time.value += 0.05;
     }
-    
-    if (renderer.xr.isPresenting) {
-        handleControllerInput(controller1); // For each controller
-        handleControllerInput(controller2);
-    } else {
-        // VR mode is not active, update OrbitControls
-        controls.update();
+
+    if (currentSession) {
+        currentSession.inputSources.forEach((inputSource) => {
+            if (inputSource && inputSource.gamepad && inputSource.gamepad.axes.length > 0) {
+                const axes = inputSource.gamepad.axes;
+                if (axes.length >= 4) {
+                    const horizontal = axes[2];
+                    const vertical = axes[3];
+
+                    if (cylinder) {
+                        cylinder.rotation.y += horizontal * 0.02;
+                        cylinder.position.z += vertical * 0.05;
+                    }
+                }
+            }
+        });
     }
 
     renderer.render(scene, camera);
